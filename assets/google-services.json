@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "405330435328",
+    "project_id": "bareng-b9d88",
+    "storage_bucket": "bareng-b9d88.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405330435328:android:e542998a6a4149c91fe7e5",
+        "android_client_info": {
+          "package_name": "bareng.apps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5pcyHyPlrSRaX90n4dxGtkX52NFYge6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
