@@ -46,6 +46,12 @@ class AppGateNotifier extends StateNotifier<LocalFlagState> {
     state = state.copyWith(roomId: roomId, initialized: true);
   }
 
+  /// Returns the next mandatory route based on the current gate state.
+  ///
+  /// This is shared by redirects and active screens that need to move forward
+  /// once a flag (e.g. permission) flips.
+  String get requiredRoute => _requiredRoute;
+
   String? redirectFor(String location) {
     final requiredRoute = _requiredRoute;
     if (!state.initialized) {

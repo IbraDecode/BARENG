@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/gate/app_gate.dart';
+import '../../services/local_flags.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/loading_screen.dart';
 import '../../widgets/primary_button.dart';
 
 class PermissionScreen extends ConsumerStatefulWidget {
@@ -16,21 +18,48 @@ class PermissionScreen extends ConsumerStatefulWidget {
 
 class _PermissionScreenState extends ConsumerState<PermissionScreen> {
   bool _requested = false;
+  bool _requesting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Keep observing the gate state so we can push forward once permission flips
+    // without relying on the button callback state alone.
+    ref.listen<LocalFlagState>(gateProvider, (prev, next) {
+      if (!mounted) return;
+      if (next.permissionDone) {
+        final target = ref.read(gateProvider.notifier).requiredRoute;
+        final currentLocation = GoRouter.of(context).location;
+        if (currentLocation != target) {
+          context.go(target);
+        }
+      }
+    });
+  }
 
   Future<void> _request() async {
-    final settings = await FirebaseMessaging.instance.requestPermission();
-    final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional;
-    setState(() => _requested = granted);
-    if (granted) {
-      await ref.read(gateProvider.notifier).completePermission();
-      if (mounted) context.go('/pair');
+    setState(() => _requesting = true);
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission();
+      final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+      if (!mounted) return;
+      setState(() => _requested = granted);
+      if (granted) {
+        await ref.read(gateProvider.notifier).completePermission();
+      }
+    } finally {
+      if (mounted) setState(() => _requesting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final granted = _requested || ref.watch(gateProvider).permissionDone;
+    final gate = ref.watch(gateProvider);
+    final granted = _requested || gate.permissionDone;
+    if (gate.permissionDone) {
+      return const LoadingScreen();
+    }
     return Scaffold(
       body: Center(
         child: Padding(
@@ -57,7 +86,11 @@ class _PermissionScreenState extends ConsumerState<PermissionScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                PrimaryButton(label: 'Izinkan', onPressed: _request, enabled: !granted),
+                PrimaryButton(
+                  label: _requesting ? 'Sebentar...' : 'Izinkan',
+                  onPressed: _request,
+                  enabled: !granted && !_requesting,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Android 13+ bakal nanya. Kita janji maksimal 2 notif/hari, nggak rese.',
