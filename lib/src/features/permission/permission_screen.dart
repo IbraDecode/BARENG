@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../features/gate/app_gate.dart';
 import '../../services/local_flags.dart';
@@ -29,7 +30,7 @@ class _PermissionScreenState extends ConsumerState<PermissionScreen> {
       if (!mounted) return;
       if (next.permissionDone) {
         final target = ref.read(gateProvider.notifier).requiredRoute;
-        final currentLocation = GoRouter.of(context).location;
+        final currentLocation = _currentLocation(context);
         if (currentLocation != target) {
           context.go(target);
         }
@@ -61,47 +62,81 @@ class _PermissionScreenState extends ConsumerState<PermissionScreen> {
       return const LoadingScreen();
     }
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: GlassCard(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Notifikasi santai', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                Text(
-                  'Supaya kita bisa saling nyolek pelan kalau ada setoran atau malah belum gerak.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 18),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(granted ? Icons.notifications_active : Icons.notifications_off,
-                        color: granted ? Colors.greenAccent : Colors.amber),
-                    const SizedBox(width: 8),
-                    Text(granted ? 'OK ✅' : 'BELUM'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                PrimaryButton(
-                  label: _requesting ? 'Sebentar...' : 'Izinkan',
-                  onPressed: _request,
-                  enabled: !granted && !_requesting,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Android 13+ bakal nanya. Kita janji maksimal 2 notif/hari, nggak rese.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF10151C), Color(0xFF0E1B2B)],
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: GlassCard(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Lottie.asset(
+                    'assets/robot_3d.json',
+                    height: 160,
+                    repeat: true,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Notifikasi santai', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Supaya kita bisa saling nyolek pelan kalau ada setoran atau malah belum gerak.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: granted ? Colors.green.withOpacity(0.08) : Colors.amber.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          granted ? Icons.notifications_active : Icons.notifications_off,
+                          color: granted ? Colors.greenAccent : Colors.amber,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(granted ? 'Sudah siap' : 'Belum diizinkan'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  PrimaryButton(
+                    label: _requesting ? 'Sebentar...' : 'Izinkan',
+                    onPressed: _request,
+                    enabled: !granted && !_requesting,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Android 13+ bakal nanya. Kita janji maksimal 2 notif/hari, nggak rese.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  String _currentLocation(BuildContext context) {
+    final router = GoRouter.of(context);
+    final matches = router.routerDelegate.currentConfiguration;
+    if (matches.isNotEmpty) {
+      return matches.last.matchedLocation;
+    }
+    final info = router.routeInformationProvider.value;
+    return info.location ?? '/';
   }
 }
