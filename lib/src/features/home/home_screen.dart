@@ -62,7 +62,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final ok = await repo.addDeposit(roomId, role, amount);
       if (ok) {
         _confetti.play();
-        setState(() => statusCopy = 'Terekam. ${role.partnerName} bakal lihat realtime.');
+        setState(
+          () =>
+              statusCopy = 'Terekam. ${role.partnerName} bakal lihat realtime.',
+        );
       }
     } catch (_) {
       await queue.enqueue(PendingActionType.deposit, {
@@ -70,7 +73,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'role': role.displayName,
         'amount': amount,
       });
-      setState(() => statusCopy = 'Offline. Kita simpan dulu, nanti disinkron.');
+      setState(
+        () => statusCopy = 'Offline. Kita simpan dulu, nanti disinkron.',
+      );
     }
     await queue.syncIfOnline((action) async {
       if (action.type != PendingActionType.deposit) return true;
@@ -121,7 +126,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   alignment: Alignment.topRight,
                                   child: ConfettiWidget(
                                     confettiController: _confetti,
-                                    blastDirectionality: BlastDirectionality.explosive,
+                                    blastDirectionality:
+                                        BlastDirectionality.explosive,
                                     shouldLoop: false,
                                   ),
                                 ),
@@ -165,7 +171,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Offline-first', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Offline-first',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Text(message, textAlign: TextAlign.center),
           ],
@@ -181,26 +190,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (roomId == null || role == null) return;
     final token = await FirebaseMessaging.instance.getToken();
     if (token != null) {
-      await ref.read(realtimeRepositoryProvider).roomsRef.child('$roomId/tokens/${role.displayName}').set(token);
+      await ref
+          .read(realtimeRepositoryProvider)
+          .roomsRef
+          .child('$roomId/tokens/${role.displayName}')
+          .set(token);
       setState(() => _tokenSaved = true);
     }
   }
 
   Widget _topBar({required String greeting}) {
     final role = ref.read(gateProvider).role ?? Role.ibra;
-    final avatarAsset = role == Role.ibra ? 'assets/pf_ibra.png' : 'assets/pf_sinta.png';
+    final avatarAsset =
+        role == Role.ibra ? 'assets/pf_ibra.png' : 'assets/pf_sinta.png';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           CircleAvatar(backgroundImage: AssetImage(avatarAsset), radius: 26),
           const SizedBox(width: 12),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(greeting, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
-            const Text('Target: iPhone', style: TextStyle(color: Colors.white70)),
-          ]),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                greeting,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
+              ),
+              const Text(
+                'Target: iPhone',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
           const Spacer(),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none)),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none),
+          ),
         ],
       ),
     );
@@ -211,29 +240,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final total = snapshot.members.values.map((e) => e.totalSaved).sum;
     final todayTotal = snapshot.todayTotal(DateTime.now());
     final target = snapshot.meta.targetAmount;
-    final progress = target == 0 ? 0.0 : (total / target).clamp(0, 1).toDouble();
+    final progress =
+        target == 0 ? 0.0 : (total / target).clamp(0, 1).toDouble();
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('Total berdua', style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text(
+                'Total berdua',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               const Spacer(),
               IconButton(
                 onPressed: () => setState(() => hideAmount = !hideAmount),
-                icon: Icon(hideAmount ? Icons.visibility_off : Icons.visibility),
-              )
+                icon: Icon(
+                  hideAmount ? Icons.visibility_off : Icons.visibility,
+                ),
+              ),
             ],
           ),
-          Text(hideAmount ? '••••' : 'Rp ${total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+          Text(
+            hideAmount ? '••••' : 'Rp ${total.toStringAsFixed(0)}',
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 8),
-          LinearProgressIndicator(value: progress, minHeight: 8, borderRadius: BorderRadius.circular(10)),
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(10),
+          ),
           const SizedBox(height: 6),
-          Text('Hari ini: Rp ${hideAmount ? '•••' : todayTotal.toStringAsFixed(0)}'),
+          Text(
+            'Hari ini: Rp ${hideAmount ? '•••' : todayTotal.toStringAsFixed(0)}',
+          ),
           const SizedBox(height: 4),
           Text(
-            dayState == DayState.deposited ? 'Hari ini aman. ${role.partnerName} bakal senyum.' : 'Masih ada ruang buat setoran kecil.',
+            dayState == DayState.deposited
+                ? 'Hari ini aman. ${role.partnerName} bakal senyum.'
+                : 'Masih ada ruang buat setoran kecil.',
           ),
         ],
       ),
@@ -290,21 +336,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Quick Actions', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            'Quick Actions',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.spaceAround,
             spacing: 14,
             runSpacing: 14,
             children: [
-              QuickActionButton(label: '+7K', icon: Icons.bolt, onTap: () => _depositQuick(7000)),
-              QuickActionButton(label: 'Custom', icon: Icons.edit, onTap: () => _depositQuick(12000)),
-              QuickActionButton(label: 'History', icon: Icons.history, onTap: () {}),
-              QuickActionButton(label: 'Room info', icon: Icons.link, onTap: () {}),
+              QuickActionButton(
+                label: '+7K',
+                icon: Icons.bolt,
+                onTap: () => _depositQuick(7000),
+              ),
+              QuickActionButton(
+                label: 'Custom',
+                icon: Icons.edit,
+                onTap: () => _depositQuick(12000),
+              ),
+              QuickActionButton(
+                label: 'History',
+                icon: Icons.history,
+                onTap: () {},
+              ),
+              QuickActionButton(
+                label: 'Room info',
+                icon: Icons.link,
+                onTap: () {},
+              ),
             ],
           ),
           const SizedBox(height: 10),
-          const Text('Bareng dibuat cuma untuk kalian berdua.', style: TextStyle(color: Colors.white70)),
+          const Text(
+            'Bareng dibuat cuma untuk kalian berdua.',
+            style: TextStyle(color: Colors.white70),
+          ),
         ],
       ),
     );
@@ -320,11 +388,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(daily.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            daily.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 4),
           Text(daily.body),
           const SizedBox(height: 8),
-          Text(weekly.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            weekly.title,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           Text(weekly.body),
           const SizedBox(height: 8),
           Text(missed.title, style: const TextStyle(color: Colors.amber)),
@@ -343,7 +417,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       destinations: const [
         NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
         NavigationDestination(icon: Icon(Icons.list_alt), label: 'History'),
-        NavigationDestination(icon: Icon(Icons.add_circle, size: 36), label: 'Add'),
+        NavigationDestination(
+          icon: Icon(Icons.add_circle, size: 36),
+          label: 'Add',
+        ),
         NavigationDestination(icon: Icon(Icons.alarm), label: 'Alarm'),
         NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
       ],
@@ -359,7 +436,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final lastKey = snapshot.dailySavings.keys.toList()..sort();
     final latest = lastKey.isNotEmpty ? lastKey.last : todayKey;
     final latestDate = DateTime.parse(latest);
-    if (latestDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) return DayState.missed;
+    if (latestDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+      return DayState.missed;
+    }
     return DayState.opened;
   }
 
@@ -368,7 +447,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case DayState.deposited:
         return RobotMood.happy;
       case DayState.missed:
-        return RobotMood.disappointed; // TODO: replace robot animation for mood: proud
+        return RobotMood
+            .disappointed; // TODO: replace robot animation for mood: proud
       case DayState.opened:
         return RobotMood.waiting;
       case DayState.idle:
