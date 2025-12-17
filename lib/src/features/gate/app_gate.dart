@@ -1,0 +1,66 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../models/role.dart';
+import '../../services/local_flags.dart';
+import '../../providers.dart';
+
+final gateProvider = StateNotifierProvider<AppGateNotifier, LocalFlagState>((ref) {
+  final repo = ref.watch(localFlagsRepositoryProvider);
+  return AppGateNotifier(repo);
+});
+
+class AppGateNotifier extends StateNotifier<LocalFlagState> {
+  AppGateNotifier(this._repo, {LocalFlagState? seed}) : super(seed ?? LocalFlagState.initial()) {
+    if (seed == null) {
+      _hydrate();
+    }
+  }
+
+  final LocalFlagsRepository _repo;
+
+  Future<void> _hydrate() async {
+    final loaded = await _repo.load();
+    state = loaded;
+  }
+
+  Future<void> selectRole(Role role) async {
+    await _repo.setRole(role);
+    state = state.copyWith(role: role, initialized: true);
+  }
+
+  Future<void> completeWelcome() async {
+    await _repo.markWelcome();
+    state = state.copyWith(welcomeDone: true, initialized: true);
+  }
+
+  Future<void> completePermission() async {
+    await _repo.markPermission();
+    state = state.copyWith(permissionDone: true, initialized: true);
+  }
+
+  Future<void> setRoom(String roomId) async {
+    await _repo.saveRoomId(roomId);
+    state = state.copyWith(roomId: roomId, initialized: true);
+  }
+
+  String? redirectFor(String location) {
+    final requiredRoute = _requiredRoute;
+    if (!state.initialized) {
+      return '/loading';
+    }
+    if (location == requiredRoute) return null;
+    // Do not allow forward navigation beyond required route
+    if (requiredRoute == '/home') {
+      return null;
+    }
+    return requiredRoute;
+  }
+
+  String get _requiredRoute {
+    if (state.role == null) return '/role';
+    if (!state.welcomeDone) return '/welcome';
+    if (!state.permissionDone) return '/permission';
+    if (!state.paired) return '/pair';
+    return '/home';
+  }
+}
