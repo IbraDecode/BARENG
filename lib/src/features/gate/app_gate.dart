@@ -4,13 +4,16 @@ import '../../models/role.dart';
 import '../../services/local_flags.dart';
 import '../../providers.dart';
 
-final gateProvider = StateNotifierProvider<AppGateNotifier, LocalFlagState>((ref) {
+final gateProvider = StateNotifierProvider<AppGateNotifier, LocalFlagState>((
+  ref,
+) {
   final repo = ref.watch(localFlagsRepositoryProvider);
   return AppGateNotifier(repo);
 });
 
 class AppGateNotifier extends StateNotifier<LocalFlagState> {
-  AppGateNotifier(this._repo, {LocalFlagState? seed}) : super(seed ?? LocalFlagState.initial()) {
+  AppGateNotifier(this._repo, {LocalFlagState? seed})
+    : super(seed ?? LocalFlagState.initial()) {
     if (seed == null) {
       _hydrate();
     }
@@ -20,7 +23,7 @@ class AppGateNotifier extends StateNotifier<LocalFlagState> {
 
   Future<void> _hydrate() async {
     final loaded = await _repo.load();
-    state = loaded;
+    state = loaded.copyWith(initialized: true);
   }
 
   Future<void> selectRole(Role role) async {
@@ -43,9 +46,16 @@ class AppGateNotifier extends StateNotifier<LocalFlagState> {
     state = state.copyWith(roomId: roomId, initialized: true);
   }
 
+  /// Returns the next mandatory route based on the current gate state.
+  ///
+  /// This is shared by redirects and active screens that need to move forward
+  /// once a flag (e.g. permission) flips.
+  String get requiredRoute => _requiredRoute;
+
   String? redirectFor(String location) {
     final requiredRoute = _requiredRoute;
     if (!state.initialized) {
+      if (location == '/loading') return null;
       return '/loading';
     }
     if (location == requiredRoute) return null;

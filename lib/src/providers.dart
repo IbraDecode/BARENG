@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/pending_action.dart';
+import 'services/error_notifier.dart';
 import 'services/local_flags.dart';
 import 'services/notification_service.dart';
 import 'services/offline_queue_service.dart';
@@ -19,6 +20,10 @@ final pendingBoxProvider = Provider<Box<PendingAction>>((ref) {
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   throw UnimplementedError('NotificationService missing override');
+});
+
+final errorNotifierProvider = Provider<ErrorNotifier>((ref) {
+  throw UnimplementedError('ErrorNotifier missing override');
 });
 
 final localFlagsRepositoryProvider = Provider<LocalFlagsRepository>((ref) {
