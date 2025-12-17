@@ -21,7 +21,7 @@ class BootstrapResult {
 
 Future<BootstrapResult> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await _ensureFirebaseInitialized();
   final prefs = await SharedPreferences.getInstance();
   await Hive.initFlutter();
   if (!Hive.isAdapterRegistered(1)) {
@@ -35,4 +35,21 @@ Future<BootstrapResult> bootstrap() async {
     pendingBox: pendingBox,
     notificationService: notificationService,
   );
+}
+
+Future<FirebaseApp> _ensureFirebaseInitialized() async {
+  if (Firebase.apps.isNotEmpty) {
+    return Firebase.app();
+  }
+
+  try {
+    return await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (error) {
+    if (error.code == 'duplicate-app') {
+      return Firebase.app();
+    }
+    rethrow;
+  }
 }

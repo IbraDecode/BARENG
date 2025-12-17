@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,13 +25,15 @@ Future<void> main() async {
   }
 
   FlutterError.onError = (details) {
-    FlutterError.presentError(details);
     captureError(details.exception, details.stack ?? StackTrace.current);
+    if (kDebugMode) {
+      FlutterError.presentError(details);
+    }
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
     captureError(error, stack);
-    return false;
+    return true;
   };
 
   runZonedGuarded(
