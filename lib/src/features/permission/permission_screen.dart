@@ -95,8 +95,8 @@ class _PermissionScreenState extends ConsumerState<PermissionScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: granted
-                          ? Colors.green.withValues(opacity: 0.08)
-                          : Colors.amber.withValues(opacity: 0.08),
+                          ? Colors.green.withValues(alpha: 0.08)
+                          : Colors.amber.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
@@ -139,7 +139,6 @@ class _PermissionScreenState extends ConsumerState<PermissionScreen> {
       return matches.last.matchedLocation;
     }
     final info = router.routeInformationProvider.value;
-    final uri = info.uri ?? Uri.parse('/');
-    return uri.toString();
+    return info.uri.toString();
   }
 }
